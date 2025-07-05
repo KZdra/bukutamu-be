@@ -30,9 +30,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('me', [AuthController::class, 'me']);
 });
+Route::post('/guest', [GuestController::class, 'store']);
 
 Route::group(['middleware' => 'jwt.verify', 'prefix' => 'guest'], function ($router) {
     Route::get('/', [GuestController::class, 'getAllGuest']);
     Route::get('/{id}', [GuestController::class, 'getGuestById']);
-    Route::post('/', [GuestController::class, 'store']);
 });
