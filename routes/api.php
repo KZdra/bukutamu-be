@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestController;
 
 /*
@@ -32,6 +33,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 });
 Route::post('/guest', [GuestController::class, 'store']);
 
+Route::group(['middleware' => 'jwt.verify', 'prefix' => 'home'], function ($router) {
+    Route::get('/card', [DashboardController::class, 'getCardData']);
+});
 Route::group(['middleware' => 'jwt.verify', 'prefix' => 'guest'], function ($router) {
     Route::get('/', [GuestController::class, 'getAllGuest']);
     Route::get('/{id}', [GuestController::class, 'getGuestById']);
