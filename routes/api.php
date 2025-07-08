@@ -16,27 +16,29 @@ use App\Http\Controllers\GuestController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+    //     return $request->user();
+    // });
 
 
-Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
-    // Auth routes...
-    //Auth
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::get('me', [AuthController::class, 'me']);
-});
-Route::post('/guest', [GuestController::class, 'store']);
+    Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
+        // Auth routes...
+        //Auth
+        Route::post('register', [AuthController::class, 'register']);
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('refresh', [AuthController::class, 'refresh']);
+        Route::get('me', [AuthController::class, 'me']);
+    });
+    Route::post('/guest', [GuestController::class, 'store']);
 
-Route::group(['middleware' => 'jwt.verify', 'prefix' => 'home'], function ($router) {
-    Route::get('/card', [DashboardController::class, 'getCardData']);
-});
-Route::group(['middleware' => 'jwt.verify', 'prefix' => 'guest'], function ($router) {
-    Route::get('/', [GuestController::class, 'getAllGuest']);
+    Route::group(['middleware' => 'jwt.verify', 'prefix' => 'home'], function ($router) {
+        Route::get('/card', [DashboardController::class, 'getCardData']);
+        Route::get('/last-guest', [DashboardController::class, 'getLastTamu']);
+        Route::get('/last-institutions', [DashboardController::class, 'getLastPerusahaan']);
+    });
+    Route::group(['middleware' => 'jwt.verify', 'prefix' => 'guest'], function ($router) {
+        Route::get('/', [GuestController::class, 'getAllGuest']);
+        Route::get('/institution',[GuestController::class,'getInstitutionList']);
     Route::get('/{id}', [GuestController::class, 'getGuestById']);
 });

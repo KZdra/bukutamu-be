@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Guest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GuestController extends Controller
 {
@@ -48,16 +49,23 @@ class GuestController extends Controller
      * @param  \App\Models\Guest  $guest
      * @return \Illuminate\Http\Response
      */
-    public function GetAllGuest()
+    public function GetAllGuest(Request $request)
     {
-        $guests = Guest::all()->map(function ($guest) {
+        $query = Guest::query();
+        if ($request->filled('instansi')) {
+            $query->where('institution', 'ILIKE', '%' . $request->instansi . '%');
+        }
+
+        $guests = $query->orderBy('created_at', 'desc')->get()->map(function ($guest) {
             return [
                 'id' => $guest->id,
                 'name' => $guest->name,
                 'institution' => $guest->institution,
                 'purpose' => $guest->purpose,
                 'photo_url' => $guest->photo_url,
-                'created_at' => $guest->created_at,
+                'created_at' => Carbon::parse($guest->created_at)
+                    ->locale('id')
+                    ->translatedFormat('l, d F Y H:i'),
             ];
         });
 
@@ -80,7 +88,24 @@ class GuestController extends Controller
         return resJSON(1, "Data GET", $data, 200);
     }
 
-
+    public function getInstitutionList()
+    {
+        try {
+            $institutions = DB::table('guests')
+                ->select(DB::raw("LOWER(REPLACE(REPLACE(institution, 'PT.', 'PT'), '  ', ' ')) as instansi_normal ,REPLACE(REPLACE(institution, 'PT.', 'PT'), '  ', ' ') as instansi"))
+                ->distinct()
+                ->get()
+                ->map(function ($ins) {
+                    return [
+                        "label" => $ins->instansi,
+                        "value" => $ins->instansi_normal,
+                    ];
+                });
+            return resJSON(1, "Data Get", $institutions, 200);
+        } catch (\Exception $e) {
+            return resJSON(0, "error", $e->getMessage(), 500);
+        }
+    }
 
     /**
      * Update the specified resource in storage.
