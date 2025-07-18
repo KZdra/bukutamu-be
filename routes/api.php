@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\UnitController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +23,7 @@ use App\Http\Controllers\GuestController;
 // });
 
 Route::get('guest/export-pdf', [GuestController::class, 'exportPdf']);
+Route::get('guest/export-excel', [GuestController::class, 'exportExcel']);
 
 Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     // Auth routes...
@@ -31,16 +34,24 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('me', [AuthController::class, 'me']);
 });
-Route::post('/guest', [GuestController::class, 'store']);
 
-Route::group(['middleware' => 'jwt.verify', 'prefix' => 'home'], function ($router) {
+Route::group([ 'prefix' => 'home'], function ($router) {
     Route::get('/card', [DashboardController::class, 'getCardData']);
     Route::get('/last-guest', [DashboardController::class, 'getLastTamu']);
     Route::get('/last-institutions', [DashboardController::class, 'getLastPerusahaan']);
 });
-Route::group(['middleware' => 'jwt.verify', 'prefix' => 'guest'], function ($router) {
+Route::group([ 'prefix' => 'guest'], function ($router) {
     Route::get('/', [GuestController::class, 'getAllGuest']);
+    Route::post('/', [GuestController::class, 'store']);
     Route::get('/institution', [GuestController::class, 'getInstitutionList']);
-    Route::get('/export-excel', [GuestController::class, 'exportExcel']);
+    Route::get('/status', [GuestController::class, 'getallStatus']);
+    Route::get('/unit', [GuestController::class, 'getAllUnit']);
     Route::get('/{id}', [GuestController::class, 'getGuestById']);
+});
+
+Route::prefix('unit')->group(function () {
+    Route::get('/', [UnitController::class, 'index']);
+    Route::post('/', [UnitController::class, 'store']);
+    Route::put('/{id}', [UnitController::class, 'update']);
+    Route::delete('/{id}', [UnitController::class, 'destroy']);
 });

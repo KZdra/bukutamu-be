@@ -1,7 +1,7 @@
 <?php
 
 if (!function_exists('resJSON')) {
-    function resJSON($status, $message, $data, $code, $extra = [],$modeDev = false)
+    function resJSON($status, $message, $data, $code, $extra = [],$modeDev = true)
     {
         if(($code == 500 || $code == 0) && !$modeDev) {
             $message = "Terjadi kesalahan server silahkan coba lagi!";

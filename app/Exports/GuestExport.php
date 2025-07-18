@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Exports;
 
 use App\Models\Guest;
@@ -24,22 +25,33 @@ class GuestExport implements
     private int $iteration = 0;
     private $startDate;
     private $endDate;
+    private $statusId;
+    private $unitId;
 
-    public function __construct($startDate = null, $endDate = null)
+
+    public function __construct($startDate = null, $endDate = null, $statusId = null, $unitId = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
+        $this->statusId = $statusId;
+        $this->unitId = $unitId;
     }
 
     public function collection(): Collection
     {
-        $query = Guest::select('name', 'institution', 'purpose', 'created_at');
+        $query =  Guest::with('status', 'unit')->select('name', 'phone', 'institution_address', 'id_card_number', 'institution', 'purpose', 'status_id', 'unit_id', 'created_at', 'type');
 
         if ($this->startDate && $this->endDate) {
             $query->whereBetween('created_at', [
                 Carbon::parse($this->startDate)->startOfDay(),
                 Carbon::parse($this->endDate)->endOfDay(),
             ]);
+        }
+        if ($this->statusId) {
+            $query->where('status_id', $this->statusId);
+        }
+        if ($this->unitId) {
+            $query->where('unit_id', $this->unitId);
         }
 
         return $query->get();
@@ -49,10 +61,16 @@ class GuestExport implements
     {
         return [
             'No',
+            'No Id Card Tamu',
+            'Perorangan / Badan Usaha',
             'Nama',
+            'No Telp',
             'Instansi',
+            'Alamat Instansi',
             'Keperluan',
+            'Unit Yang Dituju',
             'Tanggal Kunjungan',
+            'Status'
         ];
     }
 
@@ -62,10 +80,18 @@ class GuestExport implements
 
         return [
             $this->iteration,
+            $row->id_card_number,
+            ucwords(
+                $row->type,
+            ),
             $row->name,
+            $row->phone,
             $row->institution,
+            $row->institution_address,
             $row->purpose,
+            optional($row->unit)->name ?? '-', // ← ini untuk ambil status
             Carbon::parse($row->created_at)->translatedFormat('l, d F Y H:i'),
+            optional($row->status)->name ?? '-', // ← ini untuk ambil status
         ];
     }
 

@@ -109,28 +109,40 @@
 
 
     <h2 style="margin-top: 35px">LAPORAN BUKU TAMU</h2>
-    @if ($startDate&& $endDate)
-    <h3>Periode : {{$startDate}} s/d {{$endDate}}</h3>
+    @if ($startDate && $endDate)
+        <h3>Periode : {{ $startDate }} s/d {{ $endDate }}</h3>
     @endif
 
     <table>
         <thead>
             <tr>
                 <th>NO</th>
+                <th>NOMOR KARTU TAMU</th>
                 <th>NAMA TAMU</th>
+                <th>NO TELP</th>
+                <th>PERORANGAN/BADAN USAHA</th>
                 <th>INSTANSI/PERUSAHAAN</th>
+                <th>ALAMAT INSTANSI/PERUSAHAAN</th>
+                <th>UNIT YANG DITUJU</th>
                 <th>TUJUAN KEDATANGAN</th>
                 <th>WAKTU KEHADIRAN</th>
+                <th>STATUS</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($guests as $g)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
+                    <td>{{ $g['id_card_number'] }}</td>
                     <td>{{ $g['name'] }}</td>
-                    <td>{{ $g['institution'] }}</td>
+                    <td>{{ $g['phone'] }}</td>
+                    <td>{{ ucwords($g['type']) }}</td>
+                    <td>{{ $g['institution'] ?? '-' }}</td>
+                    <td>{{ $g['institution_address'] ?? '-' }}</td>
+                    <td>{{ $g['unit'] ?? '-' }}</td>
                     <td>{{ $g['purpose'] }}</td>
                     <td>{{ $g['created_at'] }}</td>
+                    <td>{{ $g['status'] }}</td>
                 </tr>
             @endforeach
 
@@ -139,28 +151,29 @@
 
     <div class="footer">
         <br>
-        <p style="font-size: 10px;margin-top:5px">{{$now}}</p>
+        <p style="font-size: 10px;margin-top:5px">{{ $now }}</p>
     </div>
-    
+
     <script type="text/php">
-        $pdf->page_script('
+        if (isset($pdf)) {
             $font = $fontMetrics->get_font("Times New Roman", "normal");
             $size = 10;
             $pageWidth = $pdf->get_width();
+            $pageHeight = $pdf->get_height();
             $text = "Halaman " . $PAGE_NUM . " dari " . $PAGE_COUNT;
     
-            // Calculate text width to center it
+            // Hitung posisi x tengah
             $textWidth = $fontMetrics->get_text_width($text, $font, $size);
-            $x = ($pageWidth - $textWidth) / 2; // Center horizontally
+            $x = ($pageWidth - $textWidth) / 2;
     
-            // Adjust the y-coordinate for the page number to be ABOVE the date
-            // A smaller y-value means higher on the page.
-            // If your date is typically around y=815, try something like y=800 or y=795 for the page number.
-            $y = 780; // You might need to fine-tune this value
+            // Tentukan posisi y yang aman untuk landscape maupun portrait
+            // Misal kita tampilkan 30px dari bawah
+            $y = $pageHeight - 60;
     
             $pdf->text($x, $y, $text, $font, $size);
-        ');
+        }
     </script>
+
 </body>
 
 </html>

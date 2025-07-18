@@ -31,26 +31,40 @@ class DashboardController extends Controller
         $jumlahInstansiBerbeda = DB::table('guests')
             ->distinct('institution')
             ->count('institution');
+
+        $jumlahKemarin = DB::table('guests')
+            ->whereDate('created_at', today()->subDay())
+            ->count();
+        $persentase = $jumlahKemarin > 0 ? (($jumlahHariIni - $jumlahKemarin) / $jumlahKemarin) * 100 : 0;
         $data = [
             'today' => $jumlahHariIni,
+            'yesterday' => $jumlahKemarin,
             'this_week' => $jumlahMingguIni,
             'this_month' => $jumlahBulanIni,
             'unique_institution' => $jumlahInstansiBerbeda,
+            'persentase' => $persentase
         ];
         return resJSON(1, "Get Data", $data, 200);
     }
     public function getLastTamu(Request $request)
     {
-        $guests = Guest::orderBy('created_at', 'desc')
+        $guests = Guest::with('status') // ini penting
+            ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
             ->map(function ($guest) {
                 return [
                     'id' => $guest->id,
                     'name' => $guest->name,
+                    'guest_phone' => $guest->phone,
+                    'id_card_number' => $guest->id_card_number,
+                    'type' => ucwords($guest->type),
                     'institution' => $guest->institution,
+                    'institution_address' => $guest->institution_address,
                     'purpose' => $guest->purpose,
                     'photo_url' => $guest->photo_url,
+                    'status' => $guest->status?->name,
+                    'unit' => $guest->unit?->name,
                     'created_at' => $guest->created_at,
                 ];
             });
